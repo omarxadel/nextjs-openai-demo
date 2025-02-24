@@ -1,27 +1,37 @@
 // file: /pages/index.js
+"use client";
 import Head from "next/head";
 import { Inter } from "next/font/google";
 import { useState } from "react";
-import TextInput from "@/components/TextInput";
-import SubmitButton from "@/components/SubmitButton";
-import ResponseDisplay from "@/components/ResponseDisplay";
 import useApi from "@/hooks/useApi";
+import { useEffect } from "react";
+
+// Components
+import FileDiff from "@/components/FileDiff";
+import CodeReview from "@/components/CodeReview";
+import TextAreaInput from "@/components/TextAreaInput";
+import SubmitButton from "@/components/SubmitButton";
+
+// Utilities
 import { getUserPrompt } from "../../prompts/promptUtils";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const USE_CASE = "codeReview";
+
 export default function Home() {
-  const [inputValue, setInputValue] = useState("");
+  const [beforeValue, setBeforeValue] = useState("");
+  const [afterValue, setAfterValue] = useState("");
   const { data, error, loading, fetchData } = useApi();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const submitValue = getUserPrompt(inputValue);
-    await fetchData("/api/openai", "POST", submitValue);
-  };
-
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
+    // Here we combine "before" and "after" into a single prompt
+    const prompt = getUserPrompt(USE_CASE, beforeValue, afterValue);
+    await fetchData("/api/openai", "POST", {
+      useCase: USE_CASE,
+      userMessage: prompt,
+    });
   };
 
   return (
@@ -33,21 +43,46 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="container">
-        <h1 className={inter.className}>Code Reviewer</h1>
+        <h1 className={inter.className}>GitHub-like Code Reviewer</h1>
         <p className={inter.className}>
-          {" "}
-          Enter the files that were changed in the pull request and it will
-          generate a code review for you.
+          Enter the "before" and "after" file contents, then generate a diff and
+          a code review.
         </p>
-        <form>
-          <ResponseDisplay data={data} error={error} loading={loading} />
-          <TextInput
-            value={inputValue}
-            onChange={handleInputChange}
-            placeholder={"Enter an animal"}
-          />
-          <SubmitButton onClick={handleSubmit} disabled={loading} />
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+            <TextAreaInput
+              label="Before"
+              value={beforeValue}
+              onChange={(e) => setBeforeValue(e.target.value)}
+              placeholder="Paste original file here..."
+            />
+            <TextAreaInput
+              label="After"
+              value={afterValue}
+              onChange={(e) => setAfterValue(e.target.value)}
+              placeholder="Paste modified file here..."
+            />
+          </div>
+
+          <SubmitButton onClick={handleSubmit} disabled={loading}>
+            Generate Review
+          </SubmitButton>
         </form>
+
+        {/* 
+          We can show an error or loading message. 
+          Then we show the two distinct parts:
+            1) The diff of the files
+            2) The overall code review
+        */}
+        {/* {error && <p style={{ color: "red" }}>Error: {error}</p>} */}
+        {loading && <p>Loading...</p>}
+        {data && (
+          <>
+            <FileDiff before={beforeValue} after={afterValue} />
+            <CodeReview content={data.result.summary} />
+          </>
+        )}
       </main>
     </>
   );

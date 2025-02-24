@@ -1,0 +1,28 @@
+/* file: /styles/FileDiff.module.css */
+.diffContainer {
+  border: 1px solid #ccc;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.diffContent {
+  white-space: pre-wrap; /* So lines wrap appropriately */
+  font-family: monospace;
+  font-size: 0.95rem;
+  background-color: #f6f8fa;
+  padding: 1rem;
+}
+
+.added {
+  background-color: #e6ffed;
+  color: #22863a;
+}
+
+.removed {
+  background-color: #ffeef0;
+  color: #cb2431;
+}
+
+.unchanged {
+  color: #24292e;
+}

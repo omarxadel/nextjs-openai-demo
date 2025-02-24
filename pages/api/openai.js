@@ -28,12 +28,12 @@ export default async function (req, res) {
   }
 
   // Extract the payload from the request body
-  const userMessage = req.body.payload || "";
+  const { useCase, userMessage } = req.body.payload || "";
   console.log("The userMessage is: ", userMessage);
 
   try {
-    const systemMessage = getSystemPrompt();
-    const functions = getFunctions();
+    const systemMessage = getSystemPrompt(useCase);
+    const functions = getFunctions(useCase);
     const messages = [systemMessage, userMessage];
 
     // Call the OpenAI API to create a chat completion
