@@ -14,12 +14,14 @@ import SubmitButton from "@/components/SubmitButton";
 
 // Utilities
 import { getUserPrompt } from "../../prompts/promptUtils";
+import TextInput from "@/components/TextInput";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const USE_CASE = "codeReview";
 
 export default function Home() {
+  const [inputValue, setInputValue] = useState("");
   const [beforeValue, setBeforeValue] = useState("");
   const [afterValue, setAfterValue] = useState("");
   const { data, error, loading, fetchData } = useApi();
@@ -27,12 +29,28 @@ export default function Home() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     // Here we combine "before" and "after" into a single prompt
-    const prompt = getUserPrompt(USE_CASE, beforeValue, afterValue);
+    const prompt = getUserPrompt(
+      USE_CASE,
+      "before: " +
+        beforeValue +
+        " after: " +
+        afterValue +
+        " feature summary: " +
+        inputValue
+    );
     await fetchData("/api/openai", "POST", {
       useCase: USE_CASE,
       userMessage: prompt,
     });
   };
+
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
 
   return (
     <>
@@ -43,12 +61,17 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="container">
-        <h1 className={inter.className}>GitHub-like Code Reviewer</h1>
+        <h1 className={inter.className}>Codey | Code Reviewer</h1>
         <p className={inter.className}>
           Enter the "before" and "after" file contents, then generate a diff and
           a code review.
         </p>
         <form onSubmit={handleSubmit}>
+          <TextInput
+            value={inputValue}
+            onChange={handleInputChange}
+            placeholder="Enter the PR summary"
+          />
           <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
             <TextAreaInput
               label="Before"
@@ -80,7 +103,7 @@ export default function Home() {
         {data && (
           <>
             <FileDiff before={beforeValue} after={afterValue} />
-            <CodeReview content={data.result.summary} />
+            <CodeReview content={data.result} />
           </>
         )}
       </main>

@@ -1,4 +1,6 @@
-// file: /components/CodeReview.js
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 export default function CodeReview({ content }) {
   return (
     <div style={{ marginTop: "2rem" }}>
@@ -8,13 +10,12 @@ export default function CodeReview({ content }) {
           border: "1px solid #ddd",
           padding: "1rem",
           backgroundColor: "#fff",
+          fontFamily: "Arial, sans-serif",
+          lineHeight: "1.5",
         }}
       >
-        {/* 
-            The data structure depends on what your API returns. 
-            For this example, we assume "content" is just a string of review text.
-          */}
-        <p>{content}</p>
+        {/* ReactMarkdown renders the content properly */}
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       </div>
     </div>
   );

@@ -36,6 +36,8 @@ export default async function (req, res) {
     const functions = getFunctions(useCase);
     const messages = [systemMessage, userMessage];
 
+    console.log("The messages sent to OpenAI API: ", messages);
+
     // Call the OpenAI API to create a chat completion
     const completion = await openai.createChatCompletion({
       model: "gpt-4o",
@@ -46,17 +48,9 @@ export default async function (req, res) {
       top_p: 0,
     });
 
-    const resultContent =
-      completion.data.choices[0].message.function_call.arguments;
-    try {
-      console.log("Data from OpenAI API: ", resultContent);
-      const jsonResult = JSON.parse(resultContent);
-      res.status(200).json({ result: jsonResult });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: { message: "Failed to parse JSON response." } });
-    }
+    const resultContent = completion.data.choices[0].message.content;
+    console.log("Data from OpenAI API: ", resultContent);
+    res.status(200).json({ result: resultContent });
   } catch (error) {
     if (error.response) {
       // If there's a response error, log and return the error message
